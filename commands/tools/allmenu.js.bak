@@ -1,0 +1,172 @@
+const os = require('os')
+const axios = require('axios')
+
+// ===== GLOBAL THUMB INDEX =====
+let thumbIndex = 0
+
+// ===== UPTIME FORMAT =====
+function formatUptime(ms) {
+  let totalMinutes = Math.floor(ms / 60000)
+  let days = Math.floor(totalMinutes / (60 * 24))
+  let hours = Math.floor((totalMinutes % (60 * 24)) / 60)
+  let minutes = totalMinutes % 60
+  
+  // Fancy style with symbols
+  return `⏳ ${days} 𝕕 ${hours} 𝕙 ${minutes} 𝕞`
+}
+
+// ===== FAKE QUOTED MESSAGE =====
+const fakeQuoted = {
+  key: {
+    fromMe: false,
+    participant: "0@s.whatsapp.net",
+    remoteJid: "status@broadcast"
+  },
+  message: {
+    orderMessage: {
+      orderId: "2009",
+      thumbnail: null,
+      itemCount: "9999",
+      status: "INQUIRY",
+      surface: "",
+      message: `✦ ⏤͟͟͞͞ 𝕱𝖆𝖒 𝖔𝖋𝖈 ⛧`,
+      token: "AR6xBKbXZn0Xwmu76Ksyd7rnxI+Rx87HfinVlW4lwXa6JA=="
+    }
+  },
+  contextInfo: {
+    mentionedJid: ["120363390114292114@s.whatsapp.net"],
+    forwardingScore: 999,
+    isForwarded: true,
+  }
+};
+
+const handler = async (m, { conn, usedPrefix, user }) => {
+  // ===== USER DATA =====
+  const exp = user?.exp ?? 0
+  const limit = user?.limit ?? 0
+  const money = user?.money ?? 0
+  const premium = user?.premium ? 'Yes ✅' : 'No ❌'
+
+  // ===== UPTIME =====
+  const botUptime = formatUptime(process.uptime() * 1000)
+  const vpsUptime = formatUptime(os.uptime() * 1000)
+
+  // ===== MULTIPLE THUMBNAILS =====
+  const images = [
+
+    'https://files.catbox.moe/iu9h16.jpg',
+    'https://files.catbox.moe/u8dvn3.jpg',
+        'https://files.catbox.moe/rr4s0u.jpg',
+    'https://files.catbox.moe/baxynu.jpg',
+  ]
+
+  // Ek image select karo (rotate karega har baar)
+  const selectedImage = images[thumbIndex]
+  thumbIndex = (thumbIndex + 1) % images.length
+
+  // ===== CONFIG =====
+  const footer = '© 2025 FAM OFC'
+  const botFullName = 'FAM OFC BOT'
+  const chShort = 'https://whatsapp.com/channel/0029Vb2pMIt1NCrUCy9Q0f3C'
+  const idCh = '120363390114292114@newsletter'
+
+  // ===== MENU TEXT =====
+  let menuText = `
+✦ *${botFullName}*
+
+╭─⧉ *USER INFO* ⧉─╮
+│ ✿ 𝔼𝕩𝕡 : ${exp}
+│ ✿ 𝕃𝕚𝕞𝕚𝕥 : ${limit}
+│ ✿ 𝕄𝕠𝕟𝕖𝕪 : ${money}
+│ ✿ ℙ𝕣𝕖𝕞𝕚𝕦𝕞 : ${premium}
+╰─────────────────╯
+
+╭─⧉ *BOT INFO* ⧉─╮
+│ ✿ 𝕄𝕠𝕕𝕖 : 𝕡𝕦𝕓𝕝𝕚𝕔
+│ ✿ 𝔹𝕠𝕥 𝕌𝕡𝕥𝕚𝕞𝕖 : ${botUptime}
+│ ✿ 𝕍ℙ𝕊 𝕌𝕡𝕥𝕚𝕞𝕖 : ${vpsUptime}
+╰─────────────────╯
+
+╭─────────────────────➤
+`
+
+  // ===== COMMAND CATEGORIES =====
+  let categories = {}
+  for (let plugin of global.plugins) {
+    let cat = plugin.category || 'Main Menu'
+    if (!categories[cat]) categories[cat] = []
+    categories[cat].push(plugin)
+  }
+
+  for (let [cat, cmds] of Object.entries(categories)) {
+    menuText += `│╭─▣「 ${cat.toUpperCase()} 」▣─╮\n`
+    for (let cmd of cmds) {
+      if (!cmd.command) continue
+      for (let c of cmd.command) {
+        menuText += `││ ⟿ ${usedPrefix}${c}\n`
+      }
+    }
+    menuText += `│╰───────────────\n│\n`
+  }
+
+  menuText += `
+│╭==⊱ *𝕞𝕪 𝕗𝕣𝕚𝕖𝕟𝕕𝕤* ▣─╮
+││↻ 𝕌𝕤𝕞𝕒𝕟 𝕡𝕒𝕤𝕙𝕒
+││↻ 𝕎𝕚𝕜𝕚 𝕔𝕪𝕓𝕖𝕣 𝕖𝕩𝕡𝕠𝕣𝕥 
+││↻ ℙ𝕣𝕠𝕗𝕖𝕤𝕤𝕠𝕣 𝔸𝕞𝕞𝕒𝕣
+││↻ ℝ𝕚𝕤𝕙𝕚 𝕥𝕖𝕒𝕞 𝟝𝟞
+││↻ ℕ𝕒𝕕𝕖𝕣 𝕞𝕕
+│╰───➤
+│
+│╭==⊱ *𝕆𝕗𝕗𝕚𝕔𝕚𝕒𝕝 𝕊𝕠𝕦𝕣𝕔𝕖* ▣─╮
+││↻ 𝕎𝕖𝕓𝕤𝕚𝕥𝕖: https://famofc.site
+│╰───➤
+╰─────┈➤
+
+${footer}
+`
+
+  // ===== DOWNLOAD IMAGE =====
+  const downloadImage = async (url) => {
+    try {
+      const res = await axios.get(url, { responseType: 'arraybuffer' })
+      return Buffer.from(res.data)
+    } catch {
+      return null
+    }
+  }
+
+  const imageBuffer = await downloadImage(selectedImage)
+  
+  // ===== IMAGE MESSAGE =====
+  const imageMessage = {
+    image: imageBuffer,
+    caption: menuText.trim(),
+    footer: footer,
+    contextInfo: {
+      forwardingScore: 999,
+      isForwarded: true,
+      externalAdReply: {
+        body: `⏰ 𝕌𝕡𝕥𝕚𝕞𝕖: ${botUptime}`,
+        thumbnailUrl: selectedImage,
+        thumbnail: imageBuffer,
+        mediaType: 1,
+        renderLargerThumbnail: true,
+        mediaUrl: chShort,
+      },
+      forwardedNewsletterMessageInfo: {
+        newsletterJid: idCh,
+        newsletterName: footer,
+      },
+    },
+  }
+
+  // Send message with fake quoted
+  await conn.sendMessage(m.chat, imageMessage, { quoted: fakeQuoted })
+}
+
+handler.command = ['allmenu', 'menu', 'help']
+handler.category = 'tools'
+handler.limit = false
+
+module.exports = handler

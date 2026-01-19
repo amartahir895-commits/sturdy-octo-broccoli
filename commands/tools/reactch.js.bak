@@ -1,0 +1,66 @@
+const axios = require('axios')
+
+let handler = async (m, {
+  text,
+  usedPrefix,
+  command,
+  user,
+  isOwner
+}) => {
+
+  // ===== LIMIT CHECK =====
+  if (handler.limit && user.limit <= 0 && !isOwner)
+    return m.reply(global.mess?.limit || '❌ Your limit is over')
+
+  if (!text)
+    return m.reply(
+      `❌ Example:\n${usedPrefix + command} https://whatsapp.com/channel/xxxxx 😂,🔥,❤️`
+    )
+
+  // ===== INPUT PARSE =====
+  const parts = text.split(' ')
+  const link = parts[0]
+  const reacts = parts.slice(1).join(' ') || '😂,😮,👍'
+
+  if (!link.includes('whatsapp.com/channel/'))
+    return m.reply('❌ Invalid WhatsApp Channel link')
+
+  // ===== CUT LIMIT =====
+  if (handler.limit && !isOwner) user.limit--
+
+  try {
+    m.reply('⚡ Sending reactions, please wait...')
+
+    const API_URL = 'https://otp-tec.fak-official.workers.dev/fam'
+
+    const { data } = await axios.post(
+      API_URL,
+      {
+        post_link: link,
+        reacts: reacts
+      },
+      {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 20000
+      }
+    )
+
+    if (data?.message) {
+      m.reply(`✅ ${data.message}\n\nReacts: ${reacts}`)
+    } else {
+      m.reply('❌ Failed to send reactions')
+    }
+
+  } catch (err) {
+    console.error('RCH ERROR:', err?.response?.data || err.message)
+    m.reply('❌ Error while sending reactions')
+  }
+}
+
+handler.command = ['rch', 'reactchannel']
+handler.category = 'tools'
+handler.limit = true
+handler.owner = false
+handler.premium = false
+
+module.exports = handler
