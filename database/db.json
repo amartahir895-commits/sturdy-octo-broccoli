@@ -1,0 +1,22 @@
+{
+  "user": {
+
+  },
+  "group": {
+    "120363420063443735@g.us": {
+      "welcome": true,
+      "mute": false,
+      "textLeave": "Hyoo @user",
+      "textWelcome": "halo @user"
+    },
+    "120363421327333985@g.us": {
+      "welcome": false,
+      "mute": false
+    }
+  },
+  "owner": [
+    "undefined@s.whatsapp.net",
+    "923195447147@s.whatsapp.net",
+    "923195447147@s.whatsapp.net"
+  ]
+}
